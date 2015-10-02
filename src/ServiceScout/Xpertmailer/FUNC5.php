@@ -22,11 +22,12 @@ namespace ServiceScout\XPertMailer;
  *                                                                                         *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-if (!defined('DISPLAY_XPM4_ERRORS')) define('DISPLAY_XPM4_ERRORS', true);
-
 class FUNC5 {
+  
+  static public $display_xpm4_errors = false;
+  static public $log_xpm4_errors = array();
 
-	static public function is_debug($debug) {
+  static public function is_debug($debug) {
 		return (is_array($debug) && isset($debug[0]['class'], $debug[0]['type'], $debug[0]['function'], $debug[0]['file'], $debug[0]['line']));
 	}
 
@@ -39,9 +40,9 @@ class FUNC5 {
 	}
 
 	static public function log_errors($msg = null, $strip = false) {
-		if (defined('LOG_XPM4_ERRORS')) {
-			if (is_string(LOG_XPM4_ERRORS) && is_string($msg) && is_bool($strip)) {
-				if (is_array($arr = unserialize(LOG_XPM4_ERRORS)) && isset($arr['type']) && is_int($arr['type']) && ($arr['type'] == 0 || $arr['type'] == 1 || $arr['type'] == 3)) {
+		if (self::$log_xpm4_errors) {
+			if (is_array(self::$log_xpm4_errors) && is_string($msg) && is_bool($strip)) {
+				if (is_array($arr = self::$log_xpm4_errors) && isset($arr['type']) && is_int($arr['type']) && ($arr['type'] == 0 || $arr['type'] == 1 || $arr['type'] == 3)) {
 					$msg = "\r\n".'['.date('m-d-Y H:i:s').'] XPM4 '.($strip ? str_replace(array('<br />', '<b>', '</b>', "\r\n"), '', $msg) : $msg);
 					if ($arr['type'] == 0) error_log($msg);
 					else if ($arr['type'] == 1 && isset($arr['destination'], $arr['headers']) && 
@@ -50,9 +51,9 @@ class FUNC5 {
 						error_log($msg, 1, trim($arr['destination']), trim($arr['headers']));
 					} else if ($arr['type'] == 3 && isset($arr['destination']) && is_string($arr['destination']) && strlen(trim($arr['destination'])) > 1) {
 						error_log($msg, 3, trim($arr['destination']));
-					} else if (defined('DISPLAY_XPM4_ERRORS') && DISPLAY_XPM4_ERRORS == true) trigger_error('invalid LOG_XPM4_ERRORS constant value', E_USER_WARNING);
-				} else if (defined('DISPLAY_XPM4_ERRORS') && DISPLAY_XPM4_ERRORS == true) trigger_error('invalid LOG_XPM4_ERRORS constant type', E_USER_WARNING);
-			} else if (defined('DISPLAY_XPM4_ERRORS') && DISPLAY_XPM4_ERRORS == true) trigger_error('invalid parameter(s) type', E_USER_WARNING);
+					} else if (self::$display_xpm4_errors) trigger_error('invalid LOG_XPM4_ERRORS constant value', E_USER_WARNING);
+				} else if (self::$display_xpm4_errors) trigger_error('invalid LOG_XPM4_ERRORS constant type', E_USER_WARNING);
+			} else if (self::$display_xpm4_errors) trigger_error('invalid parameter(s) type', E_USER_WARNING);
 		}
 	}
 
@@ -66,16 +67,16 @@ class FUNC5 {
 				' in <b>'.$debug[0]['file'].'</b> on line <b>'.$debug[0]['line'].'</b><br />'."\r\n";
 			self::log_errors($emsg, true);
 			if ($level == 0) {
-				if (defined('DISPLAY_XPM4_ERRORS') && DISPLAY_XPM4_ERRORS == true) die($emsg);
+				if (self::$display_xpm4_errors) die($emsg);
 				else exit;
-			} else if (defined('DISPLAY_XPM4_ERRORS') && DISPLAY_XPM4_ERRORS == true) echo $emsg;
+			} else if (self::$display_xpm4_errors) echo $emsg;
 		} else {
 			$emsg = 'invalid debug parameters';
 			self::log_errors(': '.$emsg, true);
 			if ($level == 0) {
-				if (defined('DISPLAY_XPM4_ERRORS') && DISPLAY_XPM4_ERRORS == true) trigger_error($emsg, E_USER_ERROR);
+				if (self::$display_xpm4_errors) trigger_error($emsg, E_USER_ERROR);
 				else exit;
-			} else if (defined('DISPLAY_XPM4_ERRORS') && DISPLAY_XPM4_ERRORS == true) trigger_error($emsg, E_USER_WARNING);
+			} else if (self::$display_xpm4_errors) trigger_error($emsg, E_USER_WARNING);
 		}
 		return $ret;
 	}
